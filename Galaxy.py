@@ -89,6 +89,10 @@ class Galaxy(object):
             TPCF values for old clusters
         odcorr: ndarray 
             TPCF value errors for old clusters
+        yagecut : float
+            Age cut set to define young clusters
+        oagecut : float
+            Age cut set to define old clusters
         ########################################################
         III. MCMC fit related - 
         a. replace y with o for young clusters
@@ -873,10 +877,12 @@ for computing TPCF.\n".format(self.name))
             self.ycorr = corr
             self.ydcorr = dcorr 
             self.ybootstraps = bootstraps
+            self.yagecut = age_cut
         elif(age == 'old'):
             self.ocorr = corr
             self.odcorr = dcorr 
             self.obootstraps = bootstraps
+            self.oagecut = age_cut
         else:
             self.corr = corr 
             self.dcorr = dcorr

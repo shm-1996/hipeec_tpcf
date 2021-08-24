@@ -82,14 +82,14 @@ class myPlot():
             separation_bins,corr_fit,dcorr_fit = filter_bins(self.galaxy.bin_centres,
                 self.galaxy.ycorr,self.galaxy.ydcorr)
             axs.errorbar(separation_bins,1+corr_fit,yerr=dcorr_fit,
-            fmt=fmt,lw=lw,c=lc,label=r'$T <= 10 \, \mathrm{Myr}$')
+            fmt=fmt,lw=lw,c=lc,label=r'$T <= {}$'.format(self.galaxy.yagecut/1.e6) +r'$\, \mathrm{Myr}$')
         if(age in ['both','old']):
             if(age == 'both'):
                 lc = kwargs.pop('c','#F56B5C')
             separation_bins,corr_fit,dcorr_fit = filter_bins(self.galaxy.bin_centres,
                 self.galaxy.ocorr,self.galaxy.odcorr)
             axs.errorbar(separation_bins,1+corr_fit,yerr=dcorr_fit,
-            fmt=fmt,lw=lw,c=lc,label=r'$T > 10 \, \mathrm{Myr}$')
+            fmt=fmt,lw=lw,c=lc,label=r'$T > {}$'.format(self.galaxy.oagecut/1.e6) +r'$\, \mathrm{Myr}$')
 
         if(age in ['both','young']):
 
