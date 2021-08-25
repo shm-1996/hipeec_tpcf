@@ -440,7 +440,7 @@ class myPlot():
         None
         
         """         
-
+        from TPCF import angular_dist_to_euclidean_dist,ra_dec_to_xyz
         #Get no of pairs for each class using KDTree two point correlation
         counts_DD = np.zeros((3,self.galaxy.no_bins))
         bins_transform = angular_dist_to_euclidean_dist(self.galaxy.bins)

@@ -203,7 +203,7 @@ class Galaxy(object):
             if(verbose):
                 print("Starting analysis for "+self.name)
 
-            filename = os.path.abspath('../data/galaxyinfo/'+
+            filename = os.path.abspath('../data/'+
                 self.name+'.info')
             #Check catalog file exists else throw error
             if(not os.path.exists(filename)) :
@@ -241,7 +241,7 @@ class Galaxy(object):
 
         """
         
-        info_directory = '../data/galaxyinfo'
+        info_directory = '../data/'
         
         GalaxyInfoFile = info_directory+'/galaxyProps.dat'
         list_gals = np.array(list_of_galaxies)
@@ -1037,7 +1037,6 @@ for computing TPCF.\n".format(self.name))
     def get_data(self):
         import urllib.request as request
         import urllib.error
-        from CombineCatalogs import Combine_NGC0628,Combine_NGC1313
         """
         Get catalogs and images.
         """
