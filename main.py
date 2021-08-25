@@ -89,6 +89,7 @@ Computing TPCF now..".format(galaxy_class.outdir,galaxy_class.name))
         # # c. old clusters (T>10 Myr)
         print("TPCF for clusters with age > {}".format(age_cut))
         galaxy_class.Compute_TPCF(random_method=method,age='old',age_cut=age_cut)
+        saveObj(galaxy_class,galaxy_class.outdir+'/{}_summary'.format(galaxy_class.name))
 
     #Plot TPCF if required
     if(plot):
