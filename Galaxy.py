@@ -458,6 +458,63 @@ for computing TPCF.\n".format(self.name))
         print("No properties read. Please implement this...")
         return
 
+    ####################################################################
+    # Method to filter/choose final list of candidate clusters
+    ####################################################################
+    def get_filteredlist(self,cluster_class=-1):
+        """
+        Method to filter out the choice of clusters in the raw catalog
+        Parameters:
+            cluster_class : integer
+                The cluster class to read. Use -1 to get the final clusters of Adamo et al 2020
+        Returns:
+            FilteredSources : ndarray 
+                List of indices in the file that satisfy the required constraints
+
+        """
+        file = np.loadtxt(self.catalog_file)
+        if(self.name in ['NGC_3256','NGC_3690','NGC_4194','NGC_6052']):
+            classColumn = 27
+        else:
+            classColumn = 29
+
+        Class0_sources = file[:,classColumn]==0
+        Class1_sources = file[:,classColumn]==1
+        Class2_sources = file[:,classColumn]==2
+        Class3_sources = file[:,classColumn]==3
+        Class4_sources = file[:,classColumn]==4
+
+        if(cluster_class == -1):
+            #HiPEEC classifies only class 1 as cluster candidates
+            Cluster_sources = Class1_sources
+
+            #Other filters to pick sources
+            Nfltr = file[:,5] # No of filters to which acceptable SED fitting was done
+            if(self.name in ['NGC_34','NGC_1614']):
+                PhotomErr = file[:,20] #Photometric error in the F336W filter
+            else:
+                PhotomErr = file[:,18] #Photometric error in the F336W filter    
+            
+            RChi2 = file[:,6] # Reduced Chi^2 error in  the SED fitting
+            indices_filtered = np.logical_and(np.logical_and(Nfltr>=4,PhotomErr<=0.35),
+                RChi2<=10)
+            #indices_filtered = np.where(np.logical_and(indices_filtered,RChi2<=10))
+
+            Cluster_sources = np.logical_and(Class1_sources,indices_filtered)
+
+        if(cluster_class == 1):
+            FilteredSources = np.where(Class1_sources)
+        elif(cluster_class == 2):
+            FilteredSources = np.where(Class2_sources)
+        elif(cluster_class == 3):
+            FilteredSources = np.where(Class3_sources)
+        elif(cluster_class == -1):
+            FilteredSources = np.where(Cluster_sources)
+        else :
+            raise myError("Invalid cluster class passed.")
+
+        return FilteredSources
+
 
     ####################################################################
     # Method to obtain ra dec of clusters
@@ -479,38 +536,9 @@ for computing TPCF.\n".format(self.name))
 
         """
         file = np.loadtxt(self.catalog_file)
-        if(self.name in ['NGC_3256','NGC_3690','NGC_4194','NGC_6052']):
-            classColumn = 27
-        else:
-            classColumn = 29
-
-        Class0_sources = np.where(file[:,classColumn]==0)
-        Class1_sources = np.where(file[:,classColumn]==1)
-        Class2_sources = np.where(file[:,classColumn]==2)
-        Class3_sources = np.where(file[:,classColumn]==3)
-        Class4_sources = np.where(file[:,classColumn]==4)
-
-        #HiPEEC classifies only class 1 as cluster candidates
-        Cluster_sources = Class1_sources
-
-
-        
-        # Compute TPCF for a subset of clusters if passed in argument
-        if(cluster_class == 1) :
-            RA = file[Class1_sources][:,3]
-            DEC = file[Class1_sources][:,4]
-        elif(cluster_class == 2) :
-            RA = file[Class2_sources][:,3]
-            DEC = file[Class2_sources][:,4]
-        elif(cluster_class == 3) :
-            RA = file[Class3_sources][:,3]
-            DEC = file[Class3_sources][:,4]
-        elif(cluster_class == -1) :
-            RA = file[Cluster_sources][:,3]
-            DEC = file[Cluster_sources][:,4]
-
-        else :
-            raise myError("Invalid cluster class passed.")
+        FilteredSources = self.get_filteredlist(cluster_class=cluster_class)
+        RA = file[FilteredSources][:,3]
+        DEC = file[FilteredSources][:,4]
 
         if(age is not None):
             ages = self.get_cluster_ages(cluster_class=cluster_class)
@@ -523,6 +551,10 @@ for computing TPCF.\n".format(self.name))
             
         self.ra = RA 
         self.dec = DEC
+
+        if(verbose):
+            print("{} has {} clusters that satisfy the cuts of Adamo et al 2020.".format(self.name,
+                np.size(self.ra)))
 
         self.ra_raw = RA 
         self.dec_raw = DEC
@@ -551,30 +583,8 @@ for computing TPCF.\n".format(self.name))
         """
 
         file = np.loadtxt(self.catalog_file)
-        if(self.name in ['NGC_3256','NGC_3690','NGC_4194','NGC_6052']):
-            classColumn = 27
-        else:
-            classColumn = 29
-        ageColumn = 11
-
-        Class0_sources = np.where(file[:,classColumn]==0)
-        Class1_sources = np.where(file[:,classColumn]==1)
-        Class2_sources = np.where(file[:,classColumn]==2)
-        Class3_sources = np.where(file[:,classColumn]==3)
-        Class4_sources = np.where(file[:,classColumn]==4)
-        Cluster_sources = Class1_sources
-        # Compute TPCF for a subset of clusters if required
-        if(cluster_class == 1) :
-            ages = file[Class1_sources][:,ageColumn]            
-        elif(cluster_class == 2) :
-            ages = file[Class2_sources][:,ageColumn]
-        elif(cluster_class == 3) :
-            ages = file[Class3_sources][:,ageColumn]
-        elif(cluster_class == -1) :
-            ages = file[Cluster_sources][:,ageColumn]
-        else :
-            raise myError("Invalid cluster class passed.")
-
+        FilteredSources = self.get_filteredlist(cluster_class = cluster_class)
+        ages = file[FilteredSources][:,ageColumn]
         #HiPEEC ages are in log units
         ages = np.power(10,ages)
         return ages
@@ -598,31 +608,8 @@ for computing TPCF.\n".format(self.name))
 
         """
         file = np.loadtxt(self.catalog_file)
-        if(self.name in ['NGC_3256','NGC_3690','NGC_4194','NGC_6052']):
-            classColumn = 27
-        else:
-            classColumn = 29
-        massColumn = 14
-
-        Class0_sources = np.where(file[:,classColumn]==0)
-        Class1_sources = np.where(file[:,classColumn]==1)
-        Class2_sources = np.where(file[:,classColumn]==2)
-        Class3_sources = np.where(file[:,classColumn]==3)
-        Class4_sources = np.where(file[:,classColumn]==4)
-        Cluster_sources = Class1_sources
-
-        # Compute TPCF for a subset of clusters if required
-        if(cluster_class == 1) :
-            masses = file[Class1_sources][:,massColumn]            
-        elif(cluster_class == 2) :
-            masses = file[Class2_sources][:,massColumn]
-        elif(cluster_class == 3) :
-            masses = file[Class3_sources][:,massColumn]
-        elif(cluster_class == -1) :
-            masses = file[Cluster_sources][:,massColumn]
-        else :
-            raise myError("Invalid cluster class passed.")
-
+        FilteredSources = self.get_filteredlist(cluster_class = cluster_class)
+        masses = file[FilteredSources][:,massColumn]
         return masses
         
 
